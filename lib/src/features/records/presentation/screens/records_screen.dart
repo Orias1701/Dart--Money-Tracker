@@ -8,6 +8,8 @@ import '../../../accounts/domain/account.dart';
 import '../../../accounts/presentation/providers/accounts_provider.dart';
 import '../../../categories/domain/category.dart';
 import '../../../categories/presentation/providers/categories_provider.dart';
+import '../../../shared/presentation/providers/filter_provider.dart';
+import '../../../shared/presentation/widgets/filter_bottom_sheet.dart';
 import '../../../transactions/domain/transaction.dart';
 import '../../../transactions/presentation/providers/transactions_provider.dart';
 
@@ -19,21 +21,15 @@ class RecordsScreen extends ConsumerStatefulWidget {
 }
 
 class _RecordsScreenState extends ConsumerState<RecordsScreen> {
-  DateTime? _startDate;
-  DateTime? _endDate;
-  List<String> _selectedAccountIds = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final filterState = ref.watch(filterProvider);
     final params = TransactionListParams(
-      from: _startDate,
-      to: _endDate,
-      accountIds: _selectedAccountIds.isEmpty ? null : _selectedAccountIds,
+      from: filterState.startDate,
+      to: filterState.endDate,
+      accountIds: filterState.selectedAccountIds.isEmpty
+          ? null
+          : filterState.selectedAccountIds,
     );
     final transactionsAsync = ref.watch(transactionsListProvider(params));
     final accountsAsync = ref.watch(accountsListProvider);
@@ -47,8 +43,7 @@ class _RecordsScreenState extends ConsumerState<RecordsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          final accounts = accountsAsync.valueOrNull ?? [];
-          _showFilterBottomSheet(accounts);
+          FilterBottomSheet.show(context);
         },
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.filter_list, color: Colors.black),
@@ -64,12 +59,12 @@ class _RecordsScreenState extends ConsumerState<RecordsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_startDate != null && _endDate != null)
+              if (filterState.startDate != null && filterState.endDate != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: Center(
                     child: Text(
-                      '${FormatHelpers.dateShort(_startDate!)} - ${FormatHelpers.dateShort(_endDate!)}',
+                      '${FormatHelpers.dateShort(filterState.startDate!)} - ${FormatHelpers.dateShort(filterState.endDate!)}',
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
@@ -198,259 +193,6 @@ class _RecordsScreenState extends ConsumerState<RecordsScreen> {
     }
     final keys = map.keys.toList()..sort((a, b) => b.compareTo(a));
     return Map.fromEntries(keys.map((k) => MapEntry(k, map[k]!)));
-  }
-
-  Future<void> _showFilterBottomSheet(List<Account> accounts) async {
-    DateTime? tempStart = _startDate;
-    DateTime? tempEnd = _endDate;
-    List<String> tempAccounts = List.from(_selectedAccountIds);
-
-    int getSelectedTimeIndex() {
-      if (tempStart == null && tempEnd == null) return 0;
-      final now = DateTime.now();
-      if (tempEnd!.year == now.year &&
-          tempEnd!.month == now.month &&
-          tempEnd!.day == now.day) {
-        final diff = tempEnd!.difference(tempStart!).inDays;
-        if (diff == 6) return 1; // 7 days (including today)
-        if (diff == 29) return 2; // 30 days
-      }
-      return 3; // Custom
-    }
-
-    int selectedTimeIndex = getSelectedTimeIndex();
-
-    void updateTimeByIndex(int index) {
-      selectedTimeIndex = index;
-      if (index == 0) {
-        tempStart = null;
-        tempEnd = null;
-      } else if (index == 1) {
-        final now = DateTime.now();
-        tempEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
-        tempStart = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(const Duration(days: 6));
-      } else if (index == 2) {
-        final now = DateTime.now();
-        tempEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
-        tempStart = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(const Duration(days: 29));
-      } else if (index == 3) {
-        // Will be set by date picker
-      }
-    }
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                top: 24,
-                left: 24,
-                right: 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Bộ lọc',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setModalState(() {
-                            updateTimeByIndex(0);
-                            tempAccounts.clear();
-                          });
-                        },
-                        child: const Text('Xóa bộ lọc'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Thời gian',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ChoiceChip(
-                        label: const Text('Tất cả'),
-                        selected: selectedTimeIndex == 0,
-                        onSelected: (val) {
-                          if (val) setModalState(() => updateTimeByIndex(0));
-                        },
-                      ),
-                      ChoiceChip(
-                        label: const Text('7 ngày qua'),
-                        selected: selectedTimeIndex == 1,
-                        onSelected: (val) {
-                          if (val) setModalState(() => updateTimeByIndex(1));
-                        },
-                      ),
-                      ChoiceChip(
-                        label: const Text('30 ngày qua'),
-                        selected: selectedTimeIndex == 2,
-                        onSelected: (val) {
-                          if (val) setModalState(() => updateTimeByIndex(2));
-                        },
-                      ),
-                      ChoiceChip(
-                        label: const Text('Tùy chọn'),
-                        selected: selectedTimeIndex == 3,
-                        onSelected: (val) async {
-                          if (!val) return;
-                          final picked = await showDateRangePicker(
-                            context: context,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
-                            initialDateRange:
-                                tempStart != null && tempEnd != null
-                                ? DateTimeRange(
-                                    start: tempStart!,
-                                    end: tempEnd!,
-                                  )
-                                : null,
-                            builder: (context, child) {
-                              return Theme(
-                                data: ThemeData.dark().copyWith(
-                                  colorScheme: const ColorScheme.dark(
-                                    primary: AppColors.primary,
-                                    onPrimary: Colors.black,
-                                    surface: AppColors.surface,
-                                    onSurface: AppColors.textPrimary,
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
-                          );
-                          if (picked != null) {
-                            final diff = picked.end
-                                .difference(picked.start)
-                                .inDays;
-                            if (diff > 90) {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Chỉ được chọn tối đa 90 ngày'),
-                                  backgroundColor: AppColors.expense,
-                                ),
-                              );
-                              return;
-                            }
-                            setModalState(() {
-                              selectedTimeIndex = 3;
-                              tempStart = picked.start;
-                              tempEnd = DateTime(
-                                picked.end.year,
-                                picked.end.month,
-                                picked.end.day,
-                                23,
-                                59,
-                                59,
-                              );
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  if (selectedTimeIndex == 3 &&
-                      tempStart != null &&
-                      tempEnd != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Từ ${FormatHelpers.dateShort(tempStart!)} đến ${FormatHelpers.dateShort(tempEnd!)}',
-                        style: const TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Tài khoản',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: accounts.map((account) {
-                      return FilterChip(
-                        label: Text(account.name),
-                        selected: tempAccounts.contains(account.id),
-                        onSelected: (val) {
-                          setModalState(() {
-                            if (val) {
-                              tempAccounts.add(account.id);
-                            } else {
-                              tempAccounts.remove(account.id);
-                            }
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _startDate = tempStart;
-                        _endDate = tempEnd;
-                        _selectedAccountIds = List.from(tempAccounts);
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Áp dụng',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 }
 

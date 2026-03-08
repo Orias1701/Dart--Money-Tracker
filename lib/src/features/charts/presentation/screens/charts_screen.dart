@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/format_helpers.dart';
+import '../../../shared/presentation/providers/filter_provider.dart';
+import '../../../shared/presentation/widgets/filter_bottom_sheet.dart';
 import '../../../transactions/domain/transaction.dart';
+import '../../../categories/presentation/providers/categories_provider.dart';
 import '../../data/analytics_repository.dart';
 import '../providers/analytics_provider.dart';
 
@@ -16,15 +19,6 @@ class ChartsScreen extends ConsumerStatefulWidget {
 }
 
 class _ChartsScreenState extends ConsumerState<ChartsScreen> {
-  int _tabIndex = 1; // 0=Week, 1=Month, 2=Year
-  final DateTime _reference = DateTime.now();
-
-  String get _period {
-    if (_tabIndex == 0) return 'week';
-    if (_tabIndex == 1) return 'month';
-    return 'year';
-  }
-
   void _invalidateAll() {
     ref.invalidate(expenseAnalyticsProvider);
     ref.invalidate(incomeAnalyticsProvider);
@@ -34,9 +28,18 @@ class _ChartsScreenState extends ConsumerState<ChartsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final params = ChartsParams(period: _period, reference: _reference);
+    final filterState = ref.watch(filterProvider);
+
+    // In Chart screen, if it's "Tất cả" (0), we might want to default to Last 30 days logic for the query to prevent crashing,
+    // since "Tất cả" technically means infinite history which is terrible for Charts.
+    // However, our backend requires explicitly set dates. If startDate/endDate are null, we'll supply a sweeping date.
+    final effectiveStart = filterState.startDate ?? DateTime(2000, 1, 1);
+    final effectiveEnd = filterState.endDate ?? DateTime.now();
+
+    final params = ChartsParams(from: effectiveStart, to: effectiveEnd);
+
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -47,25 +50,36 @@ class _ChartsScreenState extends ConsumerState<ChartsScreen> {
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             tabs: [
+              Tab(text: 'Tổng quan'),
               Tab(text: 'Thu'),
               Tab(text: 'Chi'),
             ],
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            FilterBottomSheet.show(context);
+          },
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.filter_list, color: Colors.black),
+        ),
         body: TabBarView(
           children: [
+            _OverviewTabContent(
+              params: params,
+              filterState: filterState,
+              onRefresh: () async => _invalidateAll(),
+            ),
             _ChartTabContent(
               isIncome: true,
               params: params,
-              selectedPeriodIndex: _tabIndex,
-              onPeriodChanged: (val) => setState(() => _tabIndex = val),
+              filterState: filterState,
               onRefresh: () async => _invalidateAll(),
             ),
             _ChartTabContent(
               isIncome: false,
               params: params,
-              selectedPeriodIndex: _tabIndex,
-              onPeriodChanged: (val) => setState(() => _tabIndex = val),
+              filterState: filterState,
               onRefresh: () async => _invalidateAll(),
             ),
           ],
@@ -75,35 +89,38 @@ class _ChartsScreenState extends ConsumerState<ChartsScreen> {
   }
 }
 
-class _ChartTabContent extends ConsumerWidget {
+class _ChartTabContent extends ConsumerStatefulWidget {
   const _ChartTabContent({
     required this.isIncome,
     required this.params,
-    required this.selectedPeriodIndex,
-    required this.onPeriodChanged,
+    required this.filterState,
     required this.onRefresh,
   });
 
   final bool isIncome;
   final ChartsParams params;
-  final int selectedPeriodIndex;
-  final ValueChanged<int> onPeriodChanged;
+  final FilterState filterState;
   final Future<void> Function() onRefresh;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (isIncome) {
-      final topItemsAsync = ref.watch(topIncomeProvider);
+  ConsumerState<_ChartTabContent> createState() => _ChartTabContentState();
+}
+
+class _ChartTabContentState extends ConsumerState<_ChartTabContent> {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isIncome) {
+      final topItemsAsync = ref.watch(topIncomeProvider(widget.params));
       return _buildContent(
         context,
-        ref.watch(incomeAnalyticsProvider(params)),
+        ref.watch(incomeAnalyticsProvider(widget.params)),
         topItemsAsync,
       );
     } else {
-      final topItemsAsync = ref.watch(topExpenseProvider);
+      final topItemsAsync = ref.watch(topExpenseProvider(widget.params));
       return _buildContent(
         context,
-        ref.watch(expenseAnalyticsProvider(params)),
+        ref.watch(expenseAnalyticsProvider(widget.params)),
         topItemsAsync,
       );
     }
@@ -114,8 +131,15 @@ class _ChartTabContent extends ConsumerWidget {
     AsyncValue<dynamic> analyticsAsync,
     AsyncValue<List<Transaction>> topItemsAsync,
   ) {
+    String chartTitle = widget.isIncome ? 'Thu nhập' : 'Chi tiêu';
+    if (widget.filterState.startDate != null &&
+        widget.filterState.endDate != null) {
+      chartTitle +=
+          '\n(từ ${FormatHelpers.dateShort(widget.filterState.startDate!)} đến ${FormatHelpers.dateShort(widget.filterState.endDate!)})';
+    }
+
     return RefreshIndicator(
-      onRefresh: onRefresh,
+      onRefresh: widget.onRefresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -134,7 +158,7 @@ class _ChartTabContent extends ConsumerWidget {
                   data: (data) => _ChartAndLegend(
                     total: data.total,
                     items: data.byCategory,
-                    title: isIncome ? 'Thu nhập' : 'Chi tiêu',
+                    title: chartTitle,
                   ),
                   loading: () => const SizedBox(
                     height: 300,
@@ -152,34 +176,14 @@ class _ChartTabContent extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Period Selection
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, label: Text('Week')),
-                ButtonSegment(value: 1, label: Text('Month')),
-                ButtonSegment(value: 2, label: Text('Year')),
-              ],
-              selected: {selectedPeriodIndex},
-              onSelectionChanged: (s) => onPeriodChanged(s.first),
-              style: SegmentedButton.styleFrom(
-                backgroundColor: AppColors.surface,
-                selectedBackgroundColor: AppColors.primary,
-                selectedForegroundColor: Colors.black,
-                foregroundColor: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 24),
-
             // Top 5 List
             topItemsAsync.when(
               data: (list) => _Top5List(
-                title: isIncome
+                title: widget.isIncome
                     ? 'Thu cao nhất gần đây'
                     : 'Chi cao nhất gần đây',
                 transactions: list,
-                isIncome: isIncome,
+                isIncome: widget.isIncome,
               ),
               loading: () => const Card(
                 color: AppColors.surface,
@@ -202,6 +206,108 @@ class _ChartTabContent extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewTabContent extends ConsumerStatefulWidget {
+  const _OverviewTabContent({
+    required this.params,
+    required this.filterState,
+    required this.onRefresh,
+  });
+
+  final ChartsParams params;
+  final FilterState filterState;
+  final Future<void> Function() onRefresh;
+
+  @override
+  ConsumerState<_OverviewTabContent> createState() =>
+      _OverviewTabContentState();
+}
+
+class _OverviewTabContentState extends ConsumerState<_OverviewTabContent> {
+  @override
+  Widget build(BuildContext context) {
+    final incomeAsync = ref.watch(incomeAnalyticsProvider(widget.params));
+    final expenseAsync = ref.watch(expenseAnalyticsProvider(widget.params));
+
+    String chartTitle = 'Tổng quan Thu / Chi';
+    if (widget.filterState.startDate != null &&
+        widget.filterState.endDate != null) {
+      chartTitle +=
+          '\n(từ ${FormatHelpers.dateShort(widget.filterState.startDate!)} đến ${FormatHelpers.dateShort(widget.filterState.endDate!)})';
+    }
+
+    return RefreshIndicator(
+      onRefresh: widget.onRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: incomeAsync.when(
+          data: (incomeData) => expenseAsync.when(
+            data: (expenseData) {
+              final totalIncome = incomeData.total;
+              final totalExpense = expenseData.total;
+
+              final combinedItems = [
+                CategoryAmount(
+                  name: 'Thu nhập',
+                  amount: totalIncome,
+                  colorHex:
+                      '#42A5F5', // AppColors.income isn't statically available here without context but we use a known hex
+                ),
+                CategoryAmount(
+                  name: 'Chi tiêu',
+                  amount: totalExpense,
+                  colorHex: '#F44336', // Fallback hex for expense
+                ),
+              ];
+
+              return Card(
+                color: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: _ChartAndLegend(
+                    total: totalIncome + totalExpense,
+                    items: combinedItems,
+                    title: chartTitle,
+                  ),
+                ),
+              );
+            },
+            loading: () => const SizedBox(
+              height: 300,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => SizedBox(
+              height: 300,
+              child: Center(
+                child: Text(
+                  'Lỗi: $e',
+                  style: const TextStyle(color: AppColors.expense),
+                ),
+              ),
+            ),
+          ),
+          loading: () => const SizedBox(
+            height: 300,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) => SizedBox(
+            height: 300,
+            child: Center(
+              child: Text(
+                'Lỗi: $e',
+                style: const TextStyle(color: AppColors.expense),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -295,6 +401,7 @@ class _ChartAndLegend extends StatelessWidget {
       children: [
         Text(
           title,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -379,7 +486,7 @@ class _ChartAndLegend extends StatelessWidget {
   }
 }
 
-class _Top5List extends StatelessWidget {
+class _Top5List extends ConsumerWidget {
   const _Top5List({
     required this.title,
     required this.transactions,
@@ -391,7 +498,9 @@ class _Top5List extends StatelessWidget {
   final bool isIncome;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoriesAsync = ref.watch(categoriesListProvider);
+
     return Card(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -425,9 +534,19 @@ class _Top5List extends StatelessWidget {
             else
               ...transactions.asMap().entries.map((e) {
                 final t = e.value;
+                String categoryName = 'Đang tải...';
+
+                categoriesAsync.whenData((categories) {
+                  final cat = categories
+                      .where((c) => c.id == t.categoryId)
+                      .firstOrNull;
+                  categoryName = cat?.name ?? 'Khác';
+                });
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '${e.key + 1}.',
@@ -438,22 +557,36 @@ class _Top5List extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          FormatHelpers.currency(t.amount),
-                          style: TextStyle(
-                            color: isIncome
-                                ? AppColors.income
-                                : AppColors.expense,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              categoryName,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              FormatHelpers.date(t.transactionDate),
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Text(
-                        FormatHelpers.date(t.transactionDate),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
+                        FormatHelpers.currency(t.amount),
+                        style: TextStyle(
+                          color: isIncome
+                              ? AppColors.income
+                              : AppColors.expense,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

@@ -12,37 +12,10 @@ class AnalyticsRepository {
   final TransactionRepository _txRepo;
   final CategoryRepository _catRepo;
 
-  static void _dateRange(
-    String period,
-    DateTime reference,
-    List<DateTime> out,
-  ) {
-    DateTime from;
-    DateTime to;
-    if (period == 'week') {
-      final weekday = reference.weekday;
-      from = reference.subtract(Duration(days: weekday - 1));
-      from = DateTime(from.year, from.month, from.day);
-      to = from.add(const Duration(days: 6));
-      to = DateTime(to.year, to.month, to.day, 23, 59, 59);
-    } else if (period == 'month') {
-      from = DateTime(reference.year, reference.month, 1);
-      to = DateTime(reference.year, reference.month + 1, 0, 23, 59, 59);
-    } else {
-      from = DateTime(reference.year, 1, 1);
-      to = DateTime(reference.year, 12, 31, 23, 59, 59);
-    }
-    out.add(from);
-    out.add(to);
-  }
-
   Future<ExpenseAnalytics> getExpenseAnalytics({
-    required String period,
-    required DateTime reference,
+    required DateTime from,
+    required DateTime to,
   }) async {
-    final range = <DateTime>[];
-    _dateRange(period, reference, range);
-    final from = range[0], to = range[1];
     final transactions = await _txRepo.getTransactions(from: from, to: to);
     final categories = await _catRepo.getCategories(type: 'expense');
     final catMap = {for (final c in categories) c.id: c};
@@ -69,12 +42,9 @@ class AnalyticsRepository {
   }
 
   Future<IncomeAnalytics> getIncomeAnalytics({
-    required String period,
-    required DateTime reference,
+    required DateTime from,
+    required DateTime to,
   }) async {
-    final range = <DateTime>[];
-    _dateRange(period, reference, range);
-    final from = range[0], to = range[1];
     final transactions = await _txRepo.getTransactions(from: from, to: to);
     final categories = await _catRepo.getCategories(type: 'income');
     final catMap = {for (final c in categories) c.id: c};
@@ -100,12 +70,16 @@ class AnalyticsRepository {
     return IncomeAnalytics(total: total, byCategory: list);
   }
 
-  Future<List<Transaction>> getTopRecentTransactions({
+  Future<List<Transaction>> getTopTransactions({
+    required DateTime from,
+    required DateTime to,
     required String type,
     int limit = 5,
   }) async {
-    final tx = await _txRepo.getTransactions(limit: 100);
-    return tx.where((t) => t.type == type).take(limit).toList();
+    final tx = await _txRepo.getTransactions(from: from, to: to);
+    final filtered = tx.where((t) => t.type == type).toList();
+    filtered.sort((a, b) => b.amount.compareTo(a.amount));
+    return filtered.take(limit).toList();
   }
 }
 

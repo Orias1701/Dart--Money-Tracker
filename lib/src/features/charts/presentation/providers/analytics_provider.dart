@@ -13,41 +13,51 @@ final analyticsRepositoryProvider = Provider<AnalyticsRepository>((ref) {
 });
 
 class ChartsParams {
-  const ChartsParams({required this.period, required this.reference});
-  final String period;
-  final DateTime reference;
+  const ChartsParams({required this.from, required this.to});
+  final DateTime from;
+  final DateTime to;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ChartsParams && period == other.period && reference == other.reference;
+      other is ChartsParams && from == other.from && to == other.to;
 
   @override
-  int get hashCode => Object.hash(period, reference);
+  int get hashCode => Object.hash(from, to);
 }
 
 final expenseAnalyticsProvider =
     FutureProvider.family<ExpenseAnalytics, ChartsParams>((ref, params) async {
-  return ref.read(analyticsRepositoryProvider).getExpenseAnalytics(
-        period: params.period,
-        reference: params.reference,
-      );
-});
+      return ref
+          .read(analyticsRepositoryProvider)
+          .getExpenseAnalytics(from: params.from, to: params.to);
+    });
 
 final incomeAnalyticsProvider =
     FutureProvider.family<IncomeAnalytics, ChartsParams>((ref, params) async {
-  return ref.read(analyticsRepositoryProvider).getIncomeAnalytics(
-        period: params.period,
-        reference: params.reference,
+      return ref
+          .read(analyticsRepositoryProvider)
+          .getIncomeAnalytics(from: params.from, to: params.to);
+    });
+
+final topIncomeProvider =
+    FutureProvider.family<List<Transaction>, ChartsParams>((ref, params) async {
+      final repo = ref.read(analyticsRepositoryProvider);
+      return repo.getTopTransactions(
+        from: params.from,
+        to: params.to,
+        type: 'income',
+        limit: 5,
       );
-});
+    });
 
-final topIncomeProvider = FutureProvider<List<Transaction>>((ref) async {
-  final repo = ref.read(analyticsRepositoryProvider);
-  return repo.getTopRecentTransactions(type: 'income', limit: 5);
-});
-
-final topExpenseProvider = FutureProvider<List<Transaction>>((ref) async {
-  final repo = ref.read(analyticsRepositoryProvider);
-  return repo.getTopRecentTransactions(type: 'expense', limit: 5);
-});
+final topExpenseProvider =
+    FutureProvider.family<List<Transaction>, ChartsParams>((ref, params) async {
+      final repo = ref.read(analyticsRepositoryProvider);
+      return repo.getTopTransactions(
+        from: params.from,
+        to: params.to,
+        type: 'expense',
+        limit: 5,
+      );
+    });
