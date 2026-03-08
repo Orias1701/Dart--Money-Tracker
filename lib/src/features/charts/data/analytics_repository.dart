@@ -6,18 +6,23 @@ class AnalyticsRepository {
   AnalyticsRepository({
     required TransactionRepository transactionRepository,
     required CategoryRepository categoryRepository,
-  })  : _txRepo = transactionRepository,
-        _catRepo = categoryRepository;
+  }) : _txRepo = transactionRepository,
+       _catRepo = categoryRepository;
 
   final TransactionRepository _txRepo;
   final CategoryRepository _catRepo;
 
-  static void _dateRange(String period, DateTime reference, List<DateTime> out) {
+  static void _dateRange(
+    String period,
+    DateTime reference,
+    List<DateTime> out,
+  ) {
     DateTime from;
     DateTime to;
     if (period == 'week') {
       final weekday = reference.weekday;
-      from = DateTime(reference.year, reference.month, reference.day - (weekday - 1));
+      from = reference.subtract(Duration(days: weekday - 1));
+      from = DateTime(from.year, from.month, from.day);
       to = from.add(const Duration(days: 6));
       to = DateTime(to.year, to.month, to.day, 23, 59, 59);
     } else if (period == 'month') {
@@ -50,11 +55,13 @@ class AnalyticsRepository {
     final list = <CategoryAmount>[];
     for (final e in byCategory.entries) {
       final cat = categories.where((c) => c.name == e.key).firstOrNull;
-      list.add(CategoryAmount(
-        name: e.key,
-        amount: e.value,
-        colorHex: cat?.colorHex ?? '#A0A0A0',
-      ));
+      list.add(
+        CategoryAmount(
+          name: e.key,
+          amount: e.value,
+          colorHex: cat?.colorHex ?? '#A0A0A0',
+        ),
+      );
     }
     list.sort((a, b) => b.amount.compareTo(a.amount));
     final total = list.fold<double>(0, (s, x) => s + x.amount);
@@ -80,18 +87,23 @@ class AnalyticsRepository {
     final list = <CategoryAmount>[];
     for (final e in byCategory.entries) {
       final cat = categories.where((c) => c.name == e.key).firstOrNull;
-      list.add(CategoryAmount(
-        name: e.key,
-        amount: e.value,
-        colorHex: cat?.colorHex ?? '#A0A0A0',
-      ));
+      list.add(
+        CategoryAmount(
+          name: e.key,
+          amount: e.value,
+          colorHex: cat?.colorHex ?? '#A0A0A0',
+        ),
+      );
     }
     list.sort((a, b) => b.amount.compareTo(a.amount));
     final total = list.fold<double>(0, (s, x) => s + x.amount);
     return IncomeAnalytics(total: total, byCategory: list);
   }
 
-  Future<List<Transaction>> getTopRecentTransactions({required String type, int limit = 5}) async {
+  Future<List<Transaction>> getTopRecentTransactions({
+    required String type,
+    int limit = 5,
+  }) async {
     final tx = await _txRepo.getTransactions(limit: 100);
     return tx.where((t) => t.type == type).take(limit).toList();
   }
@@ -114,7 +126,11 @@ class IncomeAnalytics {
 }
 
 class CategoryAmount {
-  const CategoryAmount({required this.name, required this.amount, required this.colorHex});
+  const CategoryAmount({
+    required this.name,
+    required this.amount,
+    required this.colorHex,
+  });
   final String name;
   final double amount;
   final String colorHex;

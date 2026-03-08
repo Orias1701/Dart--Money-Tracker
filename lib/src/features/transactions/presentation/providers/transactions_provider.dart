@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/transaction_repository.dart';
@@ -8,17 +9,22 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
 });
 
 final transactionsListProvider =
-    FutureProvider.family<List<Transaction>, TransactionListParams>((ref, params) async {
-  return ref.read(transactionRepositoryProvider).getTransactions(
-        accountId: params.accountId,
-        from: params.from,
-        to: params.to,
-      );
-});
+    FutureProvider.family<List<Transaction>, TransactionListParams>((
+      ref,
+      params,
+    ) async {
+      return ref
+          .read(transactionRepositoryProvider)
+          .getTransactions(
+            accountIds: params.accountIds,
+            from: params.from,
+            to: params.to,
+          );
+    });
 
 class TransactionListParams {
-  const TransactionListParams({this.accountId, this.from, this.to});
-  final String? accountId;
+  const TransactionListParams({this.accountIds, this.from, this.to});
+  final List<String>? accountIds;
   final DateTime? from;
   final DateTime? to;
 
@@ -26,10 +32,14 @@ class TransactionListParams {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is TransactionListParams &&
-          accountId == other.accountId &&
+          listEquals(accountIds, other.accountIds) &&
           from == other.from &&
           to == other.to;
 
   @override
-  int get hashCode => Object.hash(accountId, from, to);
+  int get hashCode => Object.hash(
+    accountIds == null ? null : Object.hashAll(accountIds!),
+    from,
+    to,
+  );
 }

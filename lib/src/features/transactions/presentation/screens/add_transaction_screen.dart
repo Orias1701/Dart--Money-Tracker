@@ -18,7 +18,8 @@ class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key});
 
   @override
-  ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
+  ConsumerState<AddTransactionScreen> createState() =>
+      _AddTransactionScreenState();
 }
 
 class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
@@ -78,11 +79,16 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               );
               final type = _type;
               if (!context.mounted) return;
-              DebugTapLogger.log('AddTx: AddCategory dialog OK, scheduling invalidate');
+              DebugTapLogger.log(
+                'AddTx: AddCategory dialog OK, scheduling invalidate',
+              );
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                DebugTapLogger.log('AddTx: PostFrame invalidate categories + setState');
+                DebugTapLogger.log(
+                  'AddTx: PostFrame invalidate categories + setState',
+                );
                 ref.invalidate(categoriesByTypeProvider(type));
-                if (newCat != null && mounted) setState(() => _selectedCategory = newCat);
+                if (newCat != null && mounted)
+                  setState(() => _selectedCategory = newCat);
                 if (mounted && newCat == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Không thêm được danh mục')),
@@ -90,7 +96,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 }
               });
             },
-            style: FilledButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.black),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+            ),
             child: const Text('Thêm'),
           ),
         ],
@@ -102,13 +111,15 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     DebugTapLogger.log('AddTx: _save() called');
     final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nhập số tiền hợp lệ')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Nhập số tiền hợp lệ')));
       return;
     }
     if (_type == 'transfer') {
-      if (_fromAccount == null || _toAccount == null || _fromAccount?.id == _toAccount?.id) {
+      if (_fromAccount == null ||
+          _toAccount == null ||
+          _fromAccount?.id == _toAccount?.id) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Chọn Ví nguồn và Ví đích khác nhau')),
         );
@@ -116,15 +127,15 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       }
     } else {
       if (_fromAccount == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Chọn ví')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Chọn ví')));
         return;
       }
       if (_selectedCategory == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Chọn danh mục')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Chọn danh mục')));
         return;
       }
     }
@@ -137,7 +148,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       transactionDate: _date,
       toAccountId: _type == 'transfer' ? _toAccount!.id : null,
       categoryId: _type != 'transfer' ? _selectedCategory?.id : null,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      note: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -163,7 +176,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categoriesAsync = ref.watch(categoriesByTypeProvider(_type == 'transfer' ? 'expense' : _type));
+    final categoriesAsync = ref.watch(
+      categoriesByTypeProvider(_type == 'transfer' ? 'expense' : _type),
+    );
     final accountsAsync = ref.watch(accountsListProvider);
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -184,7 +199,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
+                : const Text(
+                    'Save',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
           ),
         ],
       ),
@@ -201,10 +219,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   DebugTapLogger.log('AddTx: PostFrame setState tab=$i');
                   if (mounted) {
                     setState(() {
-                    _tabIndex = i;
-                    _selectedCategory = null;
-                    _toAccount = null;
-                  });
+                      _tabIndex = i;
+                      _selectedCategory = null;
+                      _toAccount = null;
+                    });
                   }
                 });
               },
@@ -217,12 +235,13 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      childAspectRatio: 0.85,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 16,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          childAspectRatio: 0.85,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 16,
+                        ),
                     itemCount: categories.length + 1,
                     itemBuilder: (_, i) {
                       if (i == categories.length) {
@@ -234,8 +253,11 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                           onTap: () {
                             DebugTapLogger.log('AddTx: AddCategory grid tap');
                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                              DebugTapLogger.log('AddTx: PostFrame showAddCategoryDialog');
-                              if (mounted) _showAddCategoryDialog(categories.length);
+                              DebugTapLogger.log(
+                                'AddTx: PostFrame showAddCategoryDialog',
+                              );
+                              if (mounted)
+                                _showAddCategoryDialog(categories.length);
                             });
                           },
                         );
@@ -247,10 +269,18 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                         colorHex: c.colorHex,
                         icon: _iconFromName(c.iconName),
                         onTap: () {
-                          DebugTapLogger.log('AddTx: Category grid tap "${c.name}"');
+                          DebugTapLogger.log(
+                            'AddTx: Category grid tap "${c.name}"',
+                          );
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            DebugTapLogger.log('AddTx: PostFrame setState category');
-                            if (mounted) setState(() => _selectedCategory = _selectedCategory?.id == c.id ? null : c);
+                            DebugTapLogger.log(
+                              'AddTx: PostFrame setState category',
+                            );
+                            if (mounted)
+                              setState(
+                                () => _selectedCategory =
+                                    _selectedCategory?.id == c.id ? null : c,
+                              );
                           });
                         },
                       );
@@ -258,7 +288,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Lỗi: $e', style: const TextStyle(color: AppColors.expense)),
+                error: (e, _) => Text(
+                  'Lỗi: $e',
+                  style: const TextStyle(color: AppColors.expense),
+                ),
               ),
               const SizedBox(height: 24),
             ],
@@ -289,7 +322,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                       const SizedBox(height: 16),
                       _AccountSelector(
                         label: 'Đến ví (To)',
-                        accounts: accounts.where((a) => a.id != _fromAccount?.id).toList(),
+                        accounts: accounts
+                            .where((a) => a.id != _fromAccount?.id)
+                            .toList(),
                         value: _toAccount,
                         excludeId: _fromAccount?.id,
                         onChanged: (a) {
@@ -310,7 +345,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 );
               },
               loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text('Lỗi: $e', style: const TextStyle(color: AppColors.expense)),
+              error: (e, _) => Text(
+                'Lỗi: $e',
+                style: const TextStyle(color: AppColors.expense),
+              ),
             ),
             const SizedBox(height: 24),
             TextFormField(
@@ -415,18 +453,30 @@ class _AccountSelector extends StatelessWidget {
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Hủy')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Hủy'),
+          ),
           FilledButton(
             onPressed: () async {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
               Navigator.of(ctx).pop();
               final repo = ref.read(accountRepositoryProvider);
-              final newAccount = await repo.addAccount(name: name, accountType: 'asset');
+              final newAccount = await repo.addAccount(
+                name: name,
+                accountType: 'asset',
+              );
               if (newAccount != null && context.mounted) onCreated(newAccount);
             },
-            style: FilledButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.black),
-            child: const Text('Tạo', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text(
+              'Tạo',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -463,7 +513,9 @@ class _AccountSelector extends StatelessWidget {
           ),
           dropdownColor: AppColors.surface,
           items: [
-            ...accounts.map((a) => DropdownMenuItem(value: a, child: Text(a.name))),
+            ...accounts.map(
+              (a) => DropdownMenuItem(value: a, child: Text(a.name)),
+            ),
           ],
           onChanged: (a) {
             DebugTapLogger.log('AddTx: Account dropdown changed');

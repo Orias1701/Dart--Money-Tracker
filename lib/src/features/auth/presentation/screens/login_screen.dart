@@ -16,7 +16,8 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> with WidgetsBindingObserver {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -53,7 +54,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with WidgetsBindingOb
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _pausedAt = DateTime.now();
     }
     if (state == AppLifecycleState.resumed) {
@@ -72,14 +74,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with WidgetsBindingOb
     _errorMessage = null;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _isLoading = true);
-    final result = await ref.read(authRepositoryProvider).signInWithEmailOrUsername(
+    final result = await ref
+        .read(authRepositoryProvider)
+        .signInWithEmailOrUsername(
           identifier: _identifierController.text.trim(),
           password: _passwordController.text,
         );
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (result is AuthSuccess) {
-      await LastLoginService.saveLastLoginIdentifier(_identifierController.text.trim());
+      await LastLoginService.saveLastLoginIdentifier(
+        _identifierController.text.trim(),
+      );
       context.go('/');
     } else if (result is AuthFailure) {
       setState(() => _errorMessage = result.message);
@@ -111,18 +117,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with WidgetsBindingOb
                 TextFormField(
                   controller: _identifierController,
                   keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.next,
                   autocorrect: false,
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Email hoặc tên đăng nhập',
-                    hintText: 'email@example.com hoặc tên hiển thị',
-                    hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                    hintText: 'email@example.com',
+                    hintStyle: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    ),
                     border: const OutlineInputBorder(),
                     labelStyle: const TextStyle(color: AppColors.textSecondary),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Nhập email hoặc tên đăng nhập';
+                    if (v == null || v.trim().isEmpty)
+                      return 'Nhập email hoặc tên đăng nhập';
                     return null;
                   },
                 ),
@@ -130,20 +146,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with WidgetsBindingOb
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _isLoading ? null : _submit(),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Mật khẩu',
                     hintText: 'Nhập mật khẩu',
-                    hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                    hintStyle: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    ),
                     border: const OutlineInputBorder(),
                     labelStyle: const TextStyle(color: AppColors.textSecondary),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         color: AppColors.textSecondary,
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (v) {
@@ -163,7 +192,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with WidgetsBindingOb
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: AppColors.expense, fontSize: 14),
+                    style: const TextStyle(
+                      color: AppColors.expense,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 28),

@@ -10,6 +10,7 @@ class TransactionTile extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.accountName,
     required this.amount,
     required this.isExpense,
     this.colorHex,
@@ -18,6 +19,7 @@ class TransactionTile extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+  final String? accountName;
   final String amount;
   final bool isExpense;
   final String? colorHex;
@@ -51,17 +53,37 @@ class TransactionTile extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(
               subtitle!,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             )
           : null,
-      trailing: Text(
-        isExpense ? '-$amount' : amount,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: isExpense ? AppColors.expense : AppColors.income,
-        ),
+      trailing: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            isExpense ? '-$amount' : '+$amount',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isExpense ? AppColors.expense : AppColors.income,
+            ),
+          ),
+          if (accountName != null && accountName!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              accountName!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
