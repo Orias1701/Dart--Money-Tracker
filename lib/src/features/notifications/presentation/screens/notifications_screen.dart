@@ -6,13 +6,54 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../groups/domain/group_invitation.dart';
 import '../../../groups/presentation/providers/active_group_provider.dart';
 
+/// Nội dung danh sách thông báo, dùng trong màn route hoặc form nổi.
+class NotificationsPanelContent extends ConsumerWidget {
+  const NotificationsPanelContent({super.key, this.onClose});
+
+  final VoidCallback? onClose;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final invitationsAsync = ref.watch(myInvitationsProvider);
+    return invitationsAsync.when(
+      data: (list) {
+        if (list.isEmpty) {
+          return const Center(
+            child: Text(
+              'Chưa có thông báo nào.',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(myInvitationsProvider),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: list.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final inv = list[index];
+              return _InvitationTile(
+                invitation: inv,
+                onAcceptSuccess: onClose,
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Text('Lỗi: $e', style: const TextStyle(color: AppColors.expense)),
+      ),
+    );
+  }
+}
+
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final invitationsAsync = ref.watch(myInvitationsProvider);
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -23,42 +64,19 @@ class NotificationsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: invitationsAsync.when(
-        data: (list) {
-          if (list.isEmpty) {
-            return const Center(
-              child: Text(
-                'Chưa có thông báo nào.',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(myInvitationsProvider),
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: list.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final inv = list[index];
-                return _InvitationTile(invitation: inv);
-              },
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text('Lỗi: $e', style: const TextStyle(color: AppColors.expense)),
-        ),
-      ),
+      body: NotificationsPanelContent(onClose: null),
     );
   }
 }
 
 class _InvitationTile extends ConsumerStatefulWidget {
-  const _InvitationTile({required this.invitation});
+  const _InvitationTile({
+    required this.invitation,
+    this.onAcceptSuccess,
+  });
 
   final GroupInvitation invitation;
+  final VoidCallback? onAcceptSuccess;
 
   @override
   ConsumerState<_InvitationTile> createState() => _InvitationTileState();
@@ -92,7 +110,11 @@ class _InvitationTileState extends ConsumerState<_InvitationTile> {
     );
     if (err == null) {
       if (!mounted) return;
-      context.pop();
+      if (widget.onAcceptSuccess != null) {
+        widget.onAcceptSuccess!();
+      } else {
+        context.pop();
+      }
     }
   }
 
@@ -144,13 +166,17 @@ class _InvitationTileState extends ConsumerState<_InvitationTile> {
                   backgroundColor: AppColors.income,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
+                  minimumSize: const Size(0, 40),
                 ),
                 child: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Đồng ý'),
               ),
               const SizedBox(width: 8),
               OutlinedButton(
                 onPressed: _loading ? null : _decline,
-                style: OutlinedButton.styleFrom(foregroundColor: AppColors.textSecondary),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textSecondary,
+                  minimumSize: const Size(0, 40),
+                ),
                 child: const Text('Từ chối'),
               ),
             ],

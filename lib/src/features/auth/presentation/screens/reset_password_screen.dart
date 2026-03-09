@@ -78,7 +78,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   obscureText: _obscurePassword,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu mới',
+                    labelText: 'Mật khẩu mới *',
                     hintText: 'Tối thiểu 6 ký tự',
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -99,7 +99,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   obscureText: _obscureConfirm,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: 'Xác nhận mật khẩu mới',
+                    labelText: 'Xác nhận mật khẩu mới *',
                     hintText: 'Nhập lại mật khẩu',
                     suffixIcon: IconButton(
                       icon: Icon(

@@ -43,10 +43,15 @@ class GroupRepository {
     try {
       final res = await _client.rpc('get_group_members', params: {'p_group_id': groupId});
       if (res == null) return [];
-      // PostgREST có thể trả về json trong array [ [...] ] hoặc trực tiếp list
-      final resList = res is List ? res : <dynamic>[];
-      final raw = resList.length == 1 ? resList.first : res;
-      final list = raw is List ? raw : <dynamic>[];
+      // PostgREST: json array trả về List; khi chỉ 1 phần tử đôi khi trả về 1 object (Map).
+      final List<dynamic> list;
+      if (res is List) {
+        list = List<dynamic>.from(res);
+      } else if (res is Map) {
+        list = [res]; // Một thành viên duy nhất trả về dạng object
+      } else {
+        list = [];
+      }
       return list
           .map((e) => GroupMember.fromMap(Map<String, dynamic>.from(e is Map ? e : <String, dynamic>{})))
           .toList();
@@ -63,6 +68,36 @@ class GroupRepository {
       return AppGroup.fromMap(Map<String, dynamic>.from(row as Map));
     } catch (_) {
       return null;
+    }
+  }
+
+  /// Cập nhật tên nhóm (chỉ admin nhóm). RLS: Admins can update own group.
+  Future<AppGroup?> updateGroup(String groupId, String name) async {
+    if (_userId == null || groupId.isEmpty || name.trim().isEmpty) return null;
+    try {
+      final res = await _client
+          .from('groups')
+          .update({'name': name.trim()})
+          .eq('id', groupId)
+          .select()
+          .single();
+      return AppGroup.fromMap(Map<String, dynamic>.from(res as Map));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Xoá mềm nhóm (set status = 'deleted'). Chỉ admin. Nhóm cá nhân không nên xoá.
+  Future<String?> deleteGroup(String groupId) async {
+    if (_userId == null || groupId.isEmpty) return 'Thiếu thông tin';
+    try {
+      await _client
+          .from('groups')
+          .update({'status': 'deleted'})
+          .eq('id', groupId);
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 

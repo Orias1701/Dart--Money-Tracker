@@ -131,7 +131,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
         backgroundColor: AppColors.surface,
         title: const Text('Xoá giao dịch'),
         content: const Text(
-          'Bạn có chắc muốn xoá giao dịch này? Có thể khôi phục sau nếu cần.',
+          'Bạn có chắc muốn xoá giao dịch này?',
         ),
         actions: [
           TextButton(
@@ -253,7 +253,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                     DropdownButtonFormField<Account>(
                       initialValue: _fromAccount,
                       decoration: const InputDecoration(
-                        labelText: 'Từ ví (From)',
+                        labelText: 'Từ ví *',
                       ),
                       dropdownColor: AppColors.surface,
                       items: accounts
@@ -267,7 +267,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                       DropdownButtonFormField<Account>(
                         initialValue: _toAccount,
                         decoration: const InputDecoration(
-                          labelText: 'Đến ví (To)',
+                          labelText: 'Đến ví *',
                         ),
                         dropdownColor: AppColors.surface,
                         items: accounts
@@ -322,7 +322,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                   const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [AmountInputFormatter()],
               decoration: const InputDecoration(
-                labelText: 'Số tiền',
+                labelText: 'Số tiền *',
               ),
             ),
             const SizedBox(height: 16),

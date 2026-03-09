@@ -12,7 +12,7 @@ class RecordsPlaceholderScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Records'),
+        title: const Text('Giao dịch'),
         backgroundColor: AppColors.background,
       ),
       body: SingleChildScrollView(
@@ -21,7 +21,7 @@ class RecordsPlaceholderScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Phase 1: Foundation',
+              'Giai đoạn 1: Nền tảng',
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18,
@@ -47,9 +47,9 @@ class RecordsPlaceholderScreen extends StatelessWidget {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Expenses: 0', style: TextStyle(color: AppColors.textPrimary)),
-                        Text('Income: 0', style: TextStyle(color: AppColors.textPrimary)),
-                        Text('Balance: 0', style: TextStyle(color: AppColors.textPrimary)),
+                        Text('Chi: 0', style: TextStyle(color: AppColors.textPrimary)),
+                        Text('Thu: 0', style: TextStyle(color: AppColors.textPrimary)),
+                        Text('Số dư: 0', style: TextStyle(color: AppColors.textPrimary)),
                       ],
                     ),
                   ],
@@ -58,7 +58,7 @@ class RecordsPlaceholderScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             TransactionTile(
-              title: 'Food',
+              title: 'Ăn uống',
               subtitle: 'Tiền mặt',
               amount: '150,000',
               isExpense: true,

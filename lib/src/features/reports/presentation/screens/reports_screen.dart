@@ -20,7 +20,7 @@ class ReportsScreen extends ConsumerWidget {
             const Padding(
               padding: EdgeInsets.only(top: 12),
               child: Text(
-                'Reports',
+                'Báo cáo',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 20,
@@ -57,7 +57,7 @@ class ReportsScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Net Worth',
+                            'Tài sản ròng',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
@@ -78,7 +78,7 @@ class ReportsScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Assets',
+                                      'Tài sản',
                                       style: TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
@@ -99,7 +99,7 @@ class ReportsScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Liabilities',
+                                      'Nợ',
                                       style: TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
@@ -123,13 +123,13 @@ class ReportsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   if (assets.isNotEmpty) ...[
-                    _sectionTitle('Tài sản (Assets)'),
+                    _sectionTitle('Tài sản'),
                     const SizedBox(height: 8),
                     ...assets.map((a) => _AccountTile(account: a)),
                     const SizedBox(height: 16),
                   ],
                   if (liabilities.isNotEmpty) ...[
-                    _sectionTitle('Nợ (Liabilities / Credit card)'),
+                    _sectionTitle('Nợ'),
                     const SizedBox(height: 8),
                     ...liabilities.map((a) => _AccountTile(account: a)),
                     const SizedBox(height: 16),
@@ -139,7 +139,7 @@ class ReportsScreen extends ConsumerWidget {
                       padding: EdgeInsets.all(24),
                       child: Center(
                         child: Text(
-                          'Chưa có tài khoản. Nhấn Add Account để thêm.',
+                          'Chưa có tài khoản. Nhấn Thêm tài khoản để thêm.',
                           style: TextStyle(color: AppColors.textSecondary),
                           textAlign: TextAlign.center,
                         ),
@@ -149,7 +149,7 @@ class ReportsScreen extends ConsumerWidget {
                   FilledButton.icon(
                     onPressed: () => _showAddAccountDialog(context, ref),
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Account'),
+                    label: const Text('Thêm tài khoản'),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.black,
@@ -203,7 +203,7 @@ class ReportsScreen extends ConsumerWidget {
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Tên',
+                  labelText: 'Tên *',
                   hintText: 'VD: Tiền mặt',
                 ),
               ),

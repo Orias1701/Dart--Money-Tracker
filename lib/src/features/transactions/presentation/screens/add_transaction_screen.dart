@@ -75,7 +75,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(
-                      labelText: 'Tên danh mục',
+                      labelText: 'Tên danh mục *',
                       hintText: 'VD: Lương',
                     ),
                     autofocus: true,
@@ -203,7 +203,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(
-                      labelText: 'Tên danh mục',
+                      labelText: 'Tên danh mục *',
                     ),
                     autofocus: true,
                   ),
@@ -581,7 +581,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   padding: const EdgeInsets.only(bottom: 16),
                   child: InputDecorator(
                     decoration: const InputDecoration(
-                      labelText: 'Người thanh toán',
+                      labelText: 'Người thanh toán *',
                     ),
                     child: Text(
                       paidByName,
@@ -600,7 +600,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _AccountSelector(
-                      label: 'Từ ví (From)',
+                      label: 'Từ ví *',
                       accounts: accounts,
                       value: _fromAccount,
                       excludeId: null,
@@ -620,7 +620,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     if (_type == 'transfer') ...[
                       const SizedBox(height: 16),
                       _AccountSelector(
-                        label: 'Đến ví (To)',
+                        label: 'Đến ví *',
                         accounts: accounts
                             .where((a) => a.id != _fromAccount?.id)
                             .toList(),
@@ -659,7 +659,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 AmountInputFormatter(),
               ],
               decoration: const InputDecoration(
-                labelText: 'Số tiền',
+                labelText: 'Số tiền *',
               ),
               onChanged: (_) {
                 DebugTapLogger.log('AddTx: Amount onChanged');
@@ -748,7 +748,7 @@ class _AccountSelector extends StatelessWidget {
         content: TextField(
           controller: nameController,
           decoration: const InputDecoration(
-            labelText: 'Tên ví',
+            labelText: 'Tên ví *',
             hintText: 'VD: Tiền mặt',
           ),
           autofocus: true,

@@ -163,6 +163,14 @@ class AuthRepository {
   }
 
   static String _messageFromError(dynamic e) {
+    final msg = e.toString().toLowerCase();
+    if (msg.contains('failed host lookup') ||
+        msg.contains('socketexception') ||
+        msg.contains('connection refused') ||
+        msg.contains('network is unreachable') ||
+        msg.contains('no address associated with hostname')) {
+      return 'Không kết nối được máy chủ. Kiểm tra mạng (Wi‑Fi/4G), thử bật dữ liệu di động hoặc đổi mạng rồi thử lại.';
+    }
     if (e is AuthException) {
       final m = e.message.toLowerCase();
       if (m.contains('invalid') && m.contains('credential')) {
