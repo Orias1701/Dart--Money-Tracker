@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/analytics_repository.dart';
 import '../../../categories/presentation/providers/categories_provider.dart';
+import '../../../shared/presentation/providers/filter_provider.dart';
 import '../../../transactions/domain/transaction.dart';
 import '../../../transactions/presentation/providers/transactions_provider.dart';
 
@@ -21,6 +22,15 @@ class ChartsParams {
   final String groupId;
   final DateTime from;
   final DateTime to;
+
+  /// Cùng bộ lọc + nhóm luôn ra cùng params (chuẩn hóa ngày), để refresh đúng instance Chart đang watch.
+  static ChartsParams fromFilter(FilterState filterState, String groupId) {
+    final from = filterState.startDate ?? DateTime(2000, 1, 1);
+    final to = filterState.endDate ?? DateTime.now();
+    final fromNorm = DateTime(from.year, from.month, from.day);
+    final toNorm = DateTime(to.year, to.month, to.day, 23, 59, 59, 999);
+    return ChartsParams(groupId: groupId, from: fromNorm, to: toNorm);
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -43,52 +53,56 @@ TransactionListParams _txParams(ChartsParams params) {
   );
 }
 
-final expenseAnalyticsProvider =
-    FutureProvider.family<ExpenseAnalytics, ChartsParams>((ref, params) async {
-      if (params.groupId.isEmpty) return const ExpenseAnalytics(total: 0, byCategory: []);
-      ref.watch(transactionsListProvider(_txParams(params)));
-      return ref.read(analyticsRepositoryProvider).getExpenseAnalytics(
-            groupId: params.groupId,
-            from: params.from,
-            to: params.to,
-          );
-    });
-
-final incomeAnalyticsProvider =
-    FutureProvider.family<IncomeAnalytics, ChartsParams>((ref, params) async {
-      if (params.groupId.isEmpty) return const IncomeAnalytics(total: 0, byCategory: []);
-      ref.watch(transactionsListProvider(_txParams(params)));
-      return ref.read(analyticsRepositoryProvider).getIncomeAnalytics(
-            groupId: params.groupId,
-            from: params.from,
-            to: params.to,
-          );
-    });
-
-final topIncomeProvider =
-    FutureProvider.family<List<Transaction>, ChartsParams>((ref, params) async {
-      if (params.groupId.isEmpty) return [];
-      ref.watch(transactionsListProvider(_txParams(params)));
-      final repo = ref.read(analyticsRepositoryProvider);
-      return repo.getTopTransactions(
+final expenseAnalyticsProvider = FutureProvider.autoDispose
+    .family<ExpenseAnalytics, ChartsParams>((ref, params) async {
+  if (params.groupId.isEmpty) return const ExpenseAnalytics(total: 0, byCategory: []);
+  ref.watch(transactionVersionProvider);
+  ref.watch(transactionsListProvider(_txParams(params)));
+  return ref.read(analyticsRepositoryProvider).getExpenseAnalytics(
         groupId: params.groupId,
         from: params.from,
         to: params.to,
-        type: 'income',
-        limit: 5,
       );
-    });
+});
 
-final topExpenseProvider =
-    FutureProvider.family<List<Transaction>, ChartsParams>((ref, params) async {
-      if (params.groupId.isEmpty) return [];
-      ref.watch(transactionsListProvider(_txParams(params)));
-      final repo = ref.read(analyticsRepositoryProvider);
-      return repo.getTopTransactions(
+final incomeAnalyticsProvider = FutureProvider.autoDispose
+    .family<IncomeAnalytics, ChartsParams>((ref, params) async {
+  if (params.groupId.isEmpty) return const IncomeAnalytics(total: 0, byCategory: []);
+  ref.watch(transactionVersionProvider);
+  ref.watch(transactionsListProvider(_txParams(params)));
+  return ref.read(analyticsRepositoryProvider).getIncomeAnalytics(
         groupId: params.groupId,
         from: params.from,
         to: params.to,
-        type: 'expense',
-        limit: 5,
       );
-    });
+});
+
+final topIncomeProvider = FutureProvider.autoDispose
+    .family<List<Transaction>, ChartsParams>((ref, params) async {
+  if (params.groupId.isEmpty) return [];
+  ref.watch(transactionVersionProvider);
+  ref.watch(transactionsListProvider(_txParams(params)));
+  final repo = ref.read(analyticsRepositoryProvider);
+  return repo.getTopTransactions(
+    groupId: params.groupId,
+    from: params.from,
+    to: params.to,
+    type: 'income',
+    limit: 5,
+  );
+});
+
+final topExpenseProvider = FutureProvider.autoDispose
+    .family<List<Transaction>, ChartsParams>((ref, params) async {
+  if (params.groupId.isEmpty) return [];
+  ref.watch(transactionVersionProvider);
+  ref.watch(transactionsListProvider(_txParams(params)));
+  final repo = ref.read(analyticsRepositoryProvider);
+  return repo.getTopTransactions(
+    groupId: params.groupId,
+    from: params.from,
+    to: params.to,
+    type: 'expense',
+    limit: 5,
+  );
+});

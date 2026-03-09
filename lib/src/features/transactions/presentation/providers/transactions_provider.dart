@@ -8,6 +8,9 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   return TransactionRepository();
 });
 
+/// Tăng khi có thêm/sửa/xóa giao dịch để chart và analytics luôn refetch khi mở lại.
+final transactionVersionProvider = StateProvider<int>((ref) => 0);
+
 final transactionsListProvider =
     FutureProvider.family<List<Transaction>, TransactionListParams>((
       ref,

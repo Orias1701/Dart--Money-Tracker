@@ -32,14 +32,7 @@ class _ChartsScreenState extends ConsumerState<ChartsScreen> {
     final activeGroup = ref.watch(activeGroupProvider);
     final filterState = ref.watch(filterProvider);
 
-    final effectiveStart = filterState.startDate ?? DateTime(2000, 1, 1);
-    final effectiveEnd = filterState.endDate ?? DateTime.now();
-
-    final params = ChartsParams(
-      groupId: activeGroup?.id ?? '',
-      from: effectiveStart,
-      to: effectiveEnd,
-    );
+    final params = ChartsParams.fromFilter(filterState, activeGroup?.id ?? '');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(shellAppBarTitleProvider.notifier).setTitle(

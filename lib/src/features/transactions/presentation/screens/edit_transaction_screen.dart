@@ -7,8 +7,9 @@ import '../../../../core/utils/format_helpers.dart';
 import '../../../accounts/domain/account.dart';
 import '../../../accounts/presentation/providers/accounts_provider.dart';
 import '../../../categories/domain/category.dart';
-import '../../../categories/presentation/providers/categories_provider.dart';
 import '../../../charts/presentation/providers/analytics_provider.dart';
+import '../../../categories/presentation/providers/categories_provider.dart';
+import '../../../shared/presentation/providers/filter_provider.dart';
 import '../../domain/transaction.dart';
 import '../providers/transactions_provider.dart';
 
@@ -113,10 +114,17 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     if (tx != null) {
       ref.invalidate(accountsListProvider);
       ref.invalidate(transactionsListProvider);
-      ref.invalidate(expenseAnalyticsProvider);
-      ref.invalidate(incomeAnalyticsProvider);
-      ref.invalidate(topIncomeProvider);
-      ref.invalidate(topExpenseProvider);
+      ref.read(transactionVersionProvider.notifier).state++;
+      final chartParams = ChartsParams.fromFilter(
+        ref.read(filterProvider),
+        widget.transaction.groupId,
+      );
+      final _ = <Object?>[
+        ref.refresh(expenseAnalyticsProvider(chartParams)),
+        ref.refresh(incomeAnalyticsProvider(chartParams)),
+        ref.refresh(topIncomeProvider(chartParams)),
+        ref.refresh(topExpenseProvider(chartParams)),
+      ];
       if (mounted) context.pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -159,10 +167,17 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     setState(() => _isLoading = false);
     ref.invalidate(accountsListProvider);
     ref.invalidate(transactionsListProvider);
-    ref.invalidate(expenseAnalyticsProvider);
-    ref.invalidate(incomeAnalyticsProvider);
-    ref.invalidate(topIncomeProvider);
-    ref.invalidate(topExpenseProvider);
+    ref.read(transactionVersionProvider.notifier).state++;
+    final chartParams = ChartsParams.fromFilter(
+      ref.read(filterProvider),
+      widget.transaction.groupId,
+    );
+    final _ = <Object?>[
+      ref.refresh(expenseAnalyticsProvider(chartParams)),
+      ref.refresh(incomeAnalyticsProvider(chartParams)),
+      ref.refresh(topIncomeProvider(chartParams)),
+      ref.refresh(topExpenseProvider(chartParams)),
+    ];
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

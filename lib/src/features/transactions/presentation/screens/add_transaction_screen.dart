@@ -15,6 +15,7 @@ import '../../../categories/domain/category.dart';
 import '../../../categories/presentation/providers/categories_provider.dart';
 import '../../../../shell/shell_app_bar_provider.dart';
 import '../../../groups/presentation/providers/active_group_provider.dart';
+import '../../../shared/presentation/providers/filter_provider.dart';
 import '../providers/add_screen_bar_provider.dart';
 import '../providers/transactions_provider.dart';
 
@@ -404,16 +405,22 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (tx != null) {
-      DebugTapLogger.log('AddTx: Save OK, scheduling invalidate+pop');
+      DebugTapLogger.log('AddTx: Save OK, invalidate + refresh chart + pop');
+      ref.invalidate(accountsListProvider);
+      ref.invalidate(transactionsListProvider);
+      ref.read(transactionVersionProvider.notifier).state++;
+      final chartParams = ChartsParams.fromFilter(
+        ref.read(filterProvider),
+        activeGroup.id,
+      );
+      final _ = <Object?>[
+        ref.refresh(expenseAnalyticsProvider(chartParams)),
+        ref.refresh(incomeAnalyticsProvider(chartParams)),
+        ref.refresh(topIncomeProvider(chartParams)),
+        ref.refresh(topExpenseProvider(chartParams)),
+      ];
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        DebugTapLogger.log('AddTx: PostFrame invalidate+pop');
         if (!mounted) return;
-        ref.invalidate(accountsListProvider);
-        ref.invalidate(transactionsListProvider);
-        ref.invalidate(expenseAnalyticsProvider);
-        ref.invalidate(incomeAnalyticsProvider);
-        ref.invalidate(topIncomeProvider);
-        ref.invalidate(topExpenseProvider);
         context.go('/');
       });
     } else {
