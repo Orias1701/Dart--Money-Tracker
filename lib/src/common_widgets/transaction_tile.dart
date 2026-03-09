@@ -16,6 +16,7 @@ class TransactionTile extends StatelessWidget {
     this.colorHex,
     this.icon,
     this.paidByLabel,
+    this.onTap,
   });
 
   final String title;
@@ -27,6 +28,7 @@ class TransactionTile extends StatelessWidget {
   final IconData? icon;
   /// Hiển thị khi quản lý nhóm (không phải cá nhân): tên/avatar người thanh toán.
   final String? paidByLabel;
+  final VoidCallback? onTap;
 
   static Color _parseHex(String? hex) {
     if (hex == null || hex.isEmpty) return AppColors.textSecondary;
@@ -39,6 +41,7 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final bgColor = _parseHex(colorHex);
     return ListTile(
+      onTap: onTap,
       leading: CircleAvatar(
         backgroundColor: bgColor.withValues(alpha: 0.4),
         child: Icon(

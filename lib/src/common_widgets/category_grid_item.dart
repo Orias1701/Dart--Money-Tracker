@@ -10,6 +10,7 @@ class CategoryGridItem extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.onLongPress,
     this.icon,
     this.colorHex,
   });
@@ -17,6 +18,7 @@ class CategoryGridItem extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final IconData? icon;
   final String? colorHex;
 
@@ -36,6 +38,7 @@ class CategoryGridItem extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
