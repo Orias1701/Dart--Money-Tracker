@@ -14,7 +14,7 @@ class CustomTabBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onChanged;
 
-  static const List<String> _labels = ['Expense', 'Income', 'Transfer'];
+  static const List<String> _labels = ['Chi', 'Thu', 'Chuyển'];
 
   @override
   Widget build(BuildContext context) {

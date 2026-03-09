@@ -64,7 +64,7 @@ class AddScreenBarContent extends ConsumerWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text(
-                      'Save',
+                      'Lưu',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,

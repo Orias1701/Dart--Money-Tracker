@@ -125,8 +125,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     fontSize: 16,
                   ),
                   decoration: const InputDecoration(
-                    labelText: 'Email hoặc tên đăng nhập',
-                    hintText: 'email@... hoặc username',
+                    labelText: 'Email hoặc tên đăng nhập *',
+                    hintText: 'email@vd.com hoặc tên đăng nhập',
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
@@ -146,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu',
+                    labelText: 'Mật khẩu *',
                     hintText: 'Nhập mật khẩu',
                     suffixIcon: IconButton(
                       icon: Icon(

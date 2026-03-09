@@ -130,13 +130,6 @@ class _MePlaceholderScreenState extends ConsumerState<MePlaceholderScreen> {
                               fontSize: 14,
                             ),
                           ),
-                        Text(
-                          'ID: ${user?.id ?? '—'}',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -146,7 +139,6 @@ class _MePlaceholderScreenState extends ConsumerState<MePlaceholderScreen> {
               ListTile(
                 leading: const Icon(Icons.edit, color: AppColors.textSecondary),
                 title: const Text('Chỉnh sửa hồ sơ'),
-                subtitle: const Text('Đổi họ tên hiển thị'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showEditProfileDialog(context, ref, user?.fullName),
               ),
@@ -197,88 +189,27 @@ class _MePlaceholderScreenState extends ConsumerState<MePlaceholderScreen> {
                               children: [
                                 if (isActive)
                                   const Icon(Icons.check, color: AppColors.primary, size: 20),
-                                PopupMenuButton<String>(
+                                IconButton(
                                   icon: const Icon(Icons.more_vert, size: 20),
-                                  onSelected: (value) async {
-                                    if (value == 'members') {
-                                      setState(() => _groupsExpanded = false);
-                                      context.push('/me/group-members', extra: {
-                                        'groupId': g.id,
-                                        'groupName': g.name,
-                                        'isPersonal': g.isPersonal,
-                                      });
-                                    } else if (value == 'leave') {
-                                      final ok = await showDialog<bool>(
-                                        context: context,
-                                        builder: (ctx) => AlertDialog(
-                                          backgroundColor: AppColors.surface,
-                                          title: const Text('Rời nhóm'),
-                                          content: Text(
-                                            'Bạn có chắc muốn rời nhóm "${g.name}"?',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.of(ctx).pop(false),
-                                              child: const Text('Hủy'),
-                                            ),
-                                            FilledButton(
-                                              onPressed: () => Navigator.of(ctx).pop(true),
-                                              style: FilledButton.styleFrom(
-                                                backgroundColor: AppColors.primary,
-                                                foregroundColor: Colors.black,
-                                              ),
-                                              child: const Text('Rời nhóm'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      if (ok != true || !mounted) return;
-                                      final err = await ref
-                                          .read(groupRepositoryProvider)
-                                          .leaveGroup(g.id);
-                                      if (!mounted) return;
-                                      if (err != null) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text(err)),
-                                          );
-                                        }
-                                        return;
-                                      }
-                                      ref.invalidate(userGroupsListProvider);
-                                      ref.invalidate(groupMembersProvider(g.id));
-                                      if (activeGroup?.id == g.id) {
-                                        ref.read(activeGroupProvider.notifier).setActiveGroup(null);
-                                        final repo = ref.read(groupRepositoryProvider);
-                                        final list = await repo.getUserGroups();
-                                        final personal =
-                                            list.where((x) => x.isPersonal).firstOrNull;
-                                        if (personal != null) {
-                                          ref
-                                              .read(activeGroupProvider.notifier)
-                                              .setActiveGroup(personal);
-                                        }
-                                      }
-                                      setState(() {});
-                                    }
+                                  onPressed: () {
+                                    setState(() => _groupsExpanded = false);
+                                    context.push('/me/group-members', extra: {
+                                      'groupId': g.id,
+                                      'groupName': g.name,
+                                      'isPersonal': g.isPersonal,
+                                    });
                                   },
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(
-                                      value: 'members',
-                                      child: Text('Xem thành viên'),
-                                    ),
-                                    if (!g.isPersonal)
-                                      const PopupMenuItem(
-                                        value: 'leave',
-                                        child: Text('Rời nhóm'),
-                                      ),
-                                  ],
+                                  tooltip: 'Xem nhóm',
                                 ),
                               ],
                             ),
                             onTap: () {
-                              ref.read(activeGroupProvider.notifier).setActiveGroup(g);
-                              setState(() {});
+                              setState(() => _groupsExpanded = false);
+                              context.push('/me/group-members', extra: {
+                                'groupId': g.id,
+                                'groupName': g.name,
+                                'isPersonal': g.isPersonal,
+                              });
                             },
                           );
                         }),

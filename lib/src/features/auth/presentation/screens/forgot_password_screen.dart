@@ -59,7 +59,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               children: [
                 const SizedBox(height: 32),
                 Text(
-                  'Nhập email đăng ký để nhận mã 6 số khôi phục mật khẩu.',
+                  'Nhập email đăng ký để nhận mã 6 số.',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 16,
@@ -71,8 +71,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'email@example.com',
+                    labelText: 'Email *',
+                    hintText: 'email@vd.com',
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Nhập email';

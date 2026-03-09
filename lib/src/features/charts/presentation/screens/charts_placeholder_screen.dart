@@ -10,12 +10,12 @@ class ChartsPlaceholderScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Charts'),
+        title: const Text('Biểu đồ'),
         backgroundColor: AppColors.background,
       ),
       body: const Center(
         child: Text(
-          'Charts - Phase 5',
+          'Biểu đồ',
           style: TextStyle(color: AppColors.textPrimary),
         ),
       ),

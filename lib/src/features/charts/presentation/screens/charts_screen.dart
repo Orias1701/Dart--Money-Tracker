@@ -47,7 +47,7 @@ class _ChartsScreenState extends ConsumerState<ChartsScreen> {
             const Padding(
               padding: EdgeInsets.only(top: 12),
               child: Text(
-                'Charts',
+                'Biểu đồ',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 20,

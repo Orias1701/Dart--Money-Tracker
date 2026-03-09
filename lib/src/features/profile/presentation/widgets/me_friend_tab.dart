@@ -74,7 +74,7 @@ class _MeFriendTabState extends ConsumerState<MeFriendTab> {
       setState(() => _invitingUserId = null);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(err ?? 'Đã mời ${user.fullName ?? user.username ?? user.id} vào nhóm.'),
+          content: Text(err ?? 'Đã mời ${user.fullName ?? user.username ?? 'thành viên'} vào nhóm.'),
           backgroundColor: err == null ? AppColors.income : AppColors.expense,
         ),
       );
@@ -250,7 +250,7 @@ class _MeFriendTabState extends ConsumerState<MeFriendTab> {
                   title: Text(
                     user.fullName?.trim().isNotEmpty == true
                         ? user.fullName!
-                        : (user.username ?? user.id),
+                        : (user.username ?? 'Thành viên'),
                     style: const TextStyle(color: AppColors.textPrimary),
                   ),
                   subtitle: user.username != null

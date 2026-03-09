@@ -80,7 +80,7 @@ class CustomBottomNavBar extends StatelessWidget {
           Expanded(
             child: _NavItem(
               icon: Icons.list_alt,
-              label: 'Records',
+              label: 'Giao dịch',
               selected: currentIndex == 0,
               onTap: () {
                 DebugTapLogger.log('BottomNav: _NavItem tap "Records"');
@@ -91,7 +91,7 @@ class CustomBottomNavBar extends StatelessWidget {
           Expanded(
             child: _NavItem(
               icon: Icons.pie_chart_outline,
-              label: 'Charts',
+              label: 'Biểu đồ',
               selected: currentIndex == 1,
               onTap: () {
                 DebugTapLogger.log('BottomNav: _NavItem tap "Charts"');
@@ -103,7 +103,7 @@ class CustomBottomNavBar extends StatelessWidget {
           Expanded(
             child: _NavItem(
               icon: Icons.assessment_outlined,
-              label: 'Reports',
+              label: 'Báo cáo',
               selected: currentIndex == 3,
               onTap: () {
                 DebugTapLogger.log('BottomNav: _NavItem tap "Reports"');
@@ -114,7 +114,7 @@ class CustomBottomNavBar extends StatelessWidget {
           Expanded(
             child: _NavItem(
               icon: Icons.person_outline,
-              label: 'Me',
+              label: 'Tôi',
               selected: currentIndex == 4,
               onTap: () {
                 DebugTapLogger.log('BottomNav: _NavItem tap "Me"');

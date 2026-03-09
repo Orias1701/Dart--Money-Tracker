@@ -54,6 +54,15 @@ firebase deploy
 - File: **`build/app/outputs/flutter-apk/app-release.apk`**
 - Có thể gửi file này cho người dùng cài trực tiếp (sideload) hoặc đăng lên Google Play (thường dùng AAB: `flutter build appbundle`).
 
+### Lỗi "Failed host lookup" / không kết nối được trên điện thoại
+
+Nếu app báo lỗi không phân giải được tên miền Supabase (ví dụ khi Đăng ký / Đăng nhập):
+
+1. **Kiểm tra mạng:** Bật dữ liệu di động (4G/5G) hoặc Wi‑Fi ổn định; thử mở trình duyệt xem có vào web được không.
+2. **Đổi mạng:** Một số Wi‑Fi (công ty, trường, quán) chặn hoặc không phân giải một số tên miền — thử dùng 4G thay vì Wi‑Fi (hoặc ngược lại).
+3. **Supabase project:** Vào [Supabase Dashboard](https://supabase.com/dashboard) → chọn project → kiểm tra project không ở trạng thái Paused (free tier bị tạm dừng sau một thời gian không dùng).
+4. **Build đúng .env:** Khi chạy `flutter build apk`, máy build cần có file `.env` với `SUPABASE_URL` và `SUPABASE_ANON_KEY` đúng với project đang dùng.
+
 ---
 
 ## 4. Build lại khi cần

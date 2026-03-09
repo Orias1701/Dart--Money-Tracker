@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../domain/group.dart';
 import '../providers/active_group_provider.dart';
 
 class ManageGroupsScreen extends ConsumerStatefulWidget {
@@ -83,8 +84,121 @@ class _ManageGroupsScreenState extends ConsumerState<ManageGroupsScreen> {
     }
   }
 
+  Future<void> _editGroup(AppGroup g) async {
+    final nameController = TextEditingController(text: g.name);
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Sửa tên nhóm'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Tên nhóm *',
+            hintText: 'VD: Chi tiêu gia đình',
+          ),
+          style: const TextStyle(color: AppColors.textPrimary),
+          autofocus: true,
+          onSubmitted: (_) => Navigator.of(ctx).pop(true),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.black),
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+    final newName = nameController.text.trim();
+    nameController.dispose();
+    if (result != true || !mounted) return;
+    if (newName.isEmpty) return;
+    final repo = ref.read(groupRepositoryProvider);
+    final updated = await repo.updateGroup(g.id, newName);
+    if (!mounted) return;
+    if (updated != null) {
+      ref.invalidate(userGroupsListProvider);
+      final active = ref.read(activeGroupProvider);
+      if (active?.id == g.id) {
+        ref.read(activeGroupProvider.notifier).setActiveGroup(updated);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã cập nhật tên nhóm')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không sửa được. Kiểm tra quyền admin nhóm.'), backgroundColor: AppColors.expense),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteGroup(AppGroup g) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Xóa nhóm'),
+        content: Text(
+          'Xóa nhóm "${g.name}"? Thành viên sẽ mất quyền truy cập. Không hoàn tác được.',
+          style: const TextStyle(color: AppColors.textPrimary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.expense),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final repo = ref.read(groupRepositoryProvider);
+    final err = await repo.deleteGroup(g.id);
+    if (!mounted) return;
+    if (err == null) {
+      ref.invalidate(userGroupsListProvider);
+      final active = ref.read(activeGroupProvider);
+      if (active?.id == g.id) {
+        ref.read(activeGroupProvider.notifier).setActiveGroup(null);
+        final list = await repo.getUserGroups();
+        final personal = list.where((x) => x.isPersonal).firstOrNull;
+        if (personal != null) {
+          ref.read(activeGroupProvider.notifier).setActiveGroup(personal);
+        } else if (list.isNotEmpty) {
+          ref.read(activeGroupProvider.notifier).setActiveGroup(list.first);
+        }
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã xóa nhóm')),
+        );
+        context.pop();
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err), backgroundColor: AppColors.expense),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final groupsAsync = ref.watch(userGroupsListProvider);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -101,6 +215,72 @@ class _ManageGroupsScreenState extends ConsumerState<ManageGroupsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
+              'Nhóm của tôi',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            groupsAsync.when(
+              data: (groups) {
+                if (groups.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 24),
+                    child: Text(
+                      'Chưa có nhóm. Tạo hoặc tham gia nhóm bên dưới.',
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Column(
+                    children: groups.map((g) {
+                      return Card(
+                        color: AppColors.surface,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          title: Text(
+                            g.name,
+                            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                          ),
+                          subtitle: g.isPersonal
+                              ? const Text('Cá nhân', style: TextStyle(color: AppColors.textSecondary, fontSize: 12))
+                              : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 22),
+                                onPressed: () => _editGroup(g),
+                                tooltip: 'Sửa tên',
+                              ),
+                              if (!g.isPersonal)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: AppColors.expense, size: 22),
+                                  onPressed: () => _deleteGroup(g),
+                                  tooltip: 'Xóa nhóm',
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Center(child: SizedBox(height: 32, width: 32, child: CircularProgressIndicator(strokeWidth: 2))),
+              ),
+              error: (_, __) => const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Text('Không tải được danh sách nhóm.', style: TextStyle(color: AppColors.expense, fontSize: 14)),
+              ),
+            ),
+            const Text(
               'Tạo nhóm mới',
               style: TextStyle(
                 color: AppColors.textPrimary,
@@ -112,7 +292,7 @@ class _ManageGroupsScreenState extends ConsumerState<ManageGroupsScreen> {
             TextField(
               controller: _createNameController,
               decoration: const InputDecoration(
-                labelText: 'Tên nhóm',
+                labelText: 'Tên nhóm *',
                 hintText: 'VD: Chi tiêu gia đình',
               ),
               style: const TextStyle(color: AppColors.textPrimary),
@@ -154,7 +334,7 @@ class _ManageGroupsScreenState extends ConsumerState<ManageGroupsScreen> {
             TextField(
               controller: _joinIdController,
               decoration: const InputDecoration(
-                labelText: 'ID nhóm',
+                labelText: 'ID nhóm *',
                 hintText: 'Dán ID nhóm được chia sẻ',
               ),
               style: const TextStyle(color: AppColors.textPrimary),

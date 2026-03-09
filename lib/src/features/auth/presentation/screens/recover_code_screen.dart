@@ -79,7 +79,7 @@ class _RecoverCodeScreenState extends ConsumerState<RecoverCodeScreen> {
                   maxLength: 6,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, letterSpacing: 8),
                   decoration: const InputDecoration(
-                    labelText: 'Mã xác nhận',
+                    labelText: 'Mã xác nhận *',
                     hintText: '123456',
                   ),
                   onChanged: (_) => setState(() => _errorMessage = null),

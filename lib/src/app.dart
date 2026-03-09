@@ -10,7 +10,7 @@ class SpendSyncApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'SpendSync',
+      title: 'Đồng bộ chi tiêu',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: ref.watch(appRouterProvider),

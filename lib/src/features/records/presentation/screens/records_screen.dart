@@ -13,6 +13,7 @@ import '../../../categories/presentation/providers/categories_provider.dart';
 import '../../../groups/presentation/providers/active_group_provider.dart';
 import '../../../groups/presentation/widgets/group_switcher.dart';
 import '../../../shared/presentation/providers/filter_provider.dart';
+import '../../../charts/presentation/providers/analytics_provider.dart';
 import '../../../transactions/domain/transaction.dart';
 import '../../../transactions/presentation/providers/transactions_provider.dart';
 
@@ -58,6 +59,10 @@ class _RecordsScreenState extends ConsumerState<RecordsScreen> {
         onRefresh: () async {
           ref.invalidate(transactionsListProvider);
           ref.invalidate(accountsListProvider);
+          ref.invalidate(expenseAnalyticsProvider);
+          ref.invalidate(incomeAnalyticsProvider);
+          ref.invalidate(topIncomeProvider);
+          ref.invalidate(topExpenseProvider);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -98,15 +103,15 @@ class _RecordsScreenState extends ConsumerState<RecordsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _SummaryChip(
-                            label: 'Expenses',
+                            label: 'Chi',
                             value: FormatHelpers.currency(expense),
                           ),
                           _SummaryChip(
-                            label: 'Income',
+                            label: 'Thu',
                             value: FormatHelpers.currency(income),
                           ),
                           _SummaryChip(
-                            label: 'Balance',
+                            label: 'Số dư',
                             value: FormatHelpers.currency(balance),
                           ),
                         ],

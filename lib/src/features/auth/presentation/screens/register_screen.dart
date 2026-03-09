@@ -79,8 +79,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   autocorrect: false,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: const InputDecoration(
-                    labelText: 'Tên đăng nhập',
-                    hintText: 'username',
+                    labelText: 'Tên đăng nhập *',
+                    hintText: 'tên đăng nhập',
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Nhập tên đăng nhập';
@@ -92,7 +92,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _fullNameController,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: const InputDecoration(
-                    labelText: 'Họ tên (tùy chọn)',
+                    labelText: 'Họ tên',
                     hintText: 'Nguyễn Văn A',
                   ),
                 ),
@@ -102,8 +102,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'email@example.com',
+                    labelText: 'Email *',
+                    hintText: 'email@vd.com',
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Nhập email';
@@ -117,7 +117,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   obscureText: _obscurePassword,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu',
+                    labelText: 'Mật khẩu *',
                     hintText: 'Tối thiểu 6 ký tự',
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -138,7 +138,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   obscureText: _obscureConfirm,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: 'Xác nhận mật khẩu',
+                    labelText: 'Xác nhận mật khẩu *',
                     hintText: 'Nhập lại mật khẩu',
                     suffixIcon: IconButton(
                       icon: Icon(
