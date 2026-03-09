@@ -140,6 +140,25 @@ Build release (ví dụ Android APK):
 flutter build apk
 ```
 
+### 6.5. Chạy trên Web – lỗi Hot Restart (CanvasKit)
+
+Khi chạy **Flutter Web** (`flutter run -d chrome` hoặc chọn Chrome), **Hot Restart** đôi khi gây lỗi:
+
+```text
+LateInitializationError: Field '_handledContextLostEvent' has not been initialized.
+```
+
+Đây là **lỗi đã biết** của Flutter (CanvasKit/WebGL), không phải do code dự án.
+
+**Cách xử lý:**
+
+1. **Dùng Full Restart thay vì Hot Restart:** Dừng app (Stop) rồi chạy lại `flutter run -d chrome` (hoặc nút Run). Hot **Reload** (r) thường vẫn dùng được.
+2. **Dùng HTML renderer (tránh CanvasKit):** Chạy với `--web-renderer html`:
+   ```bash
+   flutter run -d chrome --web-renderer html
+   ```
+   Renderer HTML ít gặp lỗi context loss khi restart hơn, nhưng có thể chậm hơn CanvasKit trên một số giao diện.
+
 ---
 
 ## 7. Kiểm tra nhanh
