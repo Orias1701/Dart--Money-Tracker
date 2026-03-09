@@ -17,7 +17,9 @@ import '../../features/profile/presentation/screens/me_placeholder_screen.dart';
 import '../../features/records/presentation/screens/records_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/transactions/domain/transaction.dart';
 import '../../features/transactions/presentation/screens/add_transaction_screen.dart';
+import '../../features/transactions/presentation/screens/edit_transaction_screen.dart';
 import '../../shell/main_shell_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -171,6 +173,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           enabled: false,
           child: FriendScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/edit-transaction',
+        builder: (context, state) {
+          final tx = state.extra as Transaction?;
+          if (tx == null) {
+            return const Scaffold(
+              body: Center(child: Text('Thiếu thông tin giao dịch')),
+            );
+          }
+          return EditTransactionScreen(transaction: tx);
+        },
       ),
     ],
   );
