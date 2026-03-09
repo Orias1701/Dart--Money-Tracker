@@ -74,7 +74,7 @@ class _MeFriendTabState extends ConsumerState<MeFriendTab> {
       setState(() => _invitingUserId = null);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(err == null ? 'Đã mời ${user.fullName ?? user.username ?? user.id} vào nhóm.' : err),
+          content: Text(err ?? 'Đã mời ${user.fullName ?? user.username ?? user.id} vào nhóm.'),
           backgroundColor: err == null ? AppColors.income : AppColors.expense,
         ),
       );
@@ -187,7 +187,7 @@ class _MeFriendTabState extends ConsumerState<MeFriendTab> {
               );
             },
             loading: () => const SizedBox(height: 48),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -229,7 +229,7 @@ class _MeFriendTabState extends ConsumerState<MeFriendTab> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _results.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final user = _results[index];
                 final inviting = _invitingUserId == user.id;

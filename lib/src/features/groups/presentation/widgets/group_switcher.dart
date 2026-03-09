@@ -52,7 +52,7 @@ class GroupSwitcher extends ConsumerWidget {
           selected = groups.first;
         }
         return DropdownButtonFormField<AppGroup>(
-          value: selected,
+          initialValue: selected,
           isExpanded: true,
           decoration: const InputDecoration(
             contentPadding: _kCompactPadding,
@@ -109,7 +109,7 @@ class GroupSwitcher extends ConsumerWidget {
           ),
         ),
       ),
-      error: (_, __) => InputDecorator(
+      error: (_, _) => InputDecorator(
         decoration: const InputDecoration(
           contentPadding: _kCompactPadding,
           border: OutlineInputBorder(

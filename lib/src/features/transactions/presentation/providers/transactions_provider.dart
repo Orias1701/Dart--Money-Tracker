@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../groups/presentation/providers/active_group_provider.dart';
 import '../../data/transaction_repository.dart';
 import '../../domain/transaction.dart';
 

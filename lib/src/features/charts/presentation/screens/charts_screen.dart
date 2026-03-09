@@ -435,7 +435,7 @@ class _ChartAndLegend extends StatelessWidget {
                   centerSpaceRadius: 65,
                   sections: sections,
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,

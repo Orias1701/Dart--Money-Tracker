@@ -251,7 +251,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DropdownButtonFormField<Account>(
-                      value: _fromAccount,
+                      initialValue: _fromAccount,
                       decoration: const InputDecoration(
                         labelText: 'Từ ví (From)',
                       ),
@@ -265,7 +265,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                     if (t.isTransfer) ...[
                       const SizedBox(height: 16),
                       DropdownButtonFormField<Account>(
-                        value: _toAccount,
+                        initialValue: _toAccount,
                         decoration: const InputDecoration(
                           labelText: 'Đến ví (To)',
                         ),
@@ -298,7 +298,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                     }
                   }
                   return DropdownButtonFormField<Category>(
-                    value: _selectedCategory,
+                    initialValue: _selectedCategory,
                     decoration: const InputDecoration(
                       labelText: 'Danh mục',
                     ),

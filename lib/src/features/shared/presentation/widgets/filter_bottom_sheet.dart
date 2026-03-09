@@ -163,7 +163,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   if (picked != null) {
                     final diff = picked.end.difference(picked.start).inDays;
                     if (diff > 90) {
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Chỉ được chọn tối đa 90 ngày'),

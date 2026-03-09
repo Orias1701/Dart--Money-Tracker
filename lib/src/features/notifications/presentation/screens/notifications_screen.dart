@@ -38,7 +38,7 @@ class NotificationsScreen extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: list.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final inv = list[index];
                 return _InvitationTile(invitation: inv);
@@ -72,24 +72,27 @@ class _InvitationTileState extends ConsumerState<_InvitationTile> {
     setState(() => _loading = true);
     final repo = ref.read(groupRepositoryProvider);
     final err = await repo.acceptInvitation(widget.invitation.id);
-    if (mounted) {
-      setState(() => _loading = false);
-      ref.invalidate(myInvitationsProvider);
-      ref.invalidate(userGroupsListProvider);
-      final groups = await ref.read(userGroupsListProvider.future);
-      for (final g in groups) {
-        if (g.id == widget.invitation.groupId) {
-          ref.read(activeGroupProvider.notifier).setActiveGroup(g);
-          break;
-        }
+    if (!mounted) return;
+    setState(() => _loading = false);
+    ref.invalidate(myInvitationsProvider);
+    ref.invalidate(userGroupsListProvider);
+    final groups = await ref.read(userGroupsListProvider.future);
+    if (!mounted) return;
+    for (final g in groups) {
+      if (g.id == widget.invitation.groupId) {
+        ref.read(activeGroupProvider.notifier).setActiveGroup(g);
+        break;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(err == null ? 'Đã tham gia nhóm ${widget.invitation.groupName}.' : err),
-          backgroundColor: err == null ? AppColors.income : AppColors.expense,
-        ),
-      );
-      if (err == null) context.pop();
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(err ?? 'Đã tham gia nhóm ${widget.invitation.groupName}.'),
+        backgroundColor: err == null ? AppColors.income : AppColors.expense,
+      ),
+    );
+    if (err == null) {
+      if (!mounted) return;
+      context.pop();
     }
   }
 
@@ -98,16 +101,16 @@ class _InvitationTileState extends ConsumerState<_InvitationTile> {
     setState(() => _loading = true);
     final repo = ref.read(groupRepositoryProvider);
     final err = await repo.declineInvitation(widget.invitation.id);
-    if (mounted) {
-      setState(() => _loading = false);
-      ref.invalidate(myInvitationsProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(err == null ? 'Đã từ chối lời mời.' : err),
-          backgroundColor: err == null ? AppColors.textSecondary : AppColors.expense,
-        ),
-      );
-    }
+    if (!mounted) return;
+    setState(() => _loading = false);
+    ref.invalidate(myInvitationsProvider);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(err ?? 'Đã từ chối lời mời.'),
+        backgroundColor: err == null ? AppColors.textSecondary : AppColors.expense,
+      ),
+    );
   }
 
   @override

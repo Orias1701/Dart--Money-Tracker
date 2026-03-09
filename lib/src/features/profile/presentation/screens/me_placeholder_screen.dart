@@ -238,7 +238,7 @@ class _MePlaceholderScreenState extends ConsumerState<MePlaceholderScreen> {
                                           .leaveGroup(g.id);
                                       if (!mounted) return;
                                       if (err != null) {
-                                        if (mounted) {
+                                        if (context.mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(content: Text(err)),
                                           );
@@ -309,7 +309,7 @@ class _MePlaceholderScreenState extends ConsumerState<MePlaceholderScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )),
                   ),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
               ],
               ListTile(

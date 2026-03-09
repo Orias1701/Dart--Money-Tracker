@@ -378,6 +378,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final activeGroup = ref.read(activeGroupProvider);
     final currentUser = await ref.read(currentUserProvider.future);
     if (activeGroup == null || currentUser == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng chọn nhóm hoặc đăng nhập lại')),
       );
@@ -490,8 +491,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                               DebugTapLogger.log(
                                 'AddTx: PostFrame showAddCategoryDialog',
                               );
-                              if (mounted)
+                              if (mounted) {
                                 _showAddCategoryDialog(categories.length);
+                              }
                             });
                           },
                         );
@@ -511,11 +513,12 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                             DebugTapLogger.log(
                               'AddTx: PostFrame setState category',
                             );
-                            if (mounted)
+                            if (mounted) {
                               setState(
                                 () => _selectedCategory =
                                     _selectedCategory?.id == c.id ? null : c,
                               );
+                            }
                           });
                         },
                         onLongPress: isUserCategory

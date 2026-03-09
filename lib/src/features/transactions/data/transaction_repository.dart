@@ -8,8 +8,6 @@ class TransactionRepository {
 
   final SupabaseClient _client;
 
-  String? get _userId => _client.auth.currentUser?.id;
-
   Future<List<Transaction>> getTransactions({
     required String groupId,
     List<String>? accountIds,
@@ -80,7 +78,7 @@ class TransactionRepository {
       if (toAccountId != null) map['to_account_id'] = toAccountId;
       if (categoryId != null) map['category_id'] = categoryId;
       final res = await _client.from('transactions').insert(map).select().single();
-      return Transaction.fromMap(res as Map<String, dynamic>);
+      return Transaction.fromMap(res);
     } catch (_) {
       return null;
     }
@@ -118,7 +116,7 @@ class TransactionRepository {
           .eq('group_id', groupId)
           .select()
           .single();
-      return Transaction.fromMap(res as Map<String, dynamic>);
+      return Transaction.fromMap(res);
     } catch (_) {
       return null;
     }
