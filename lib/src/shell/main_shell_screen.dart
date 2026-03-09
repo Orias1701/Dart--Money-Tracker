@@ -7,6 +7,8 @@ import '../core/constants/app_colors.dart';
 import '../core/utils/debug_tap_logger.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
 import '../features/groups/presentation/providers/active_group_provider.dart';
+import '../features/shared/presentation/widgets/filter_bottom_sheet.dart';
+import 'shell_app_bar_provider.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({
@@ -41,6 +43,10 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     final invitationsAsync = ref.watch(myInvitationsProvider);
     final invitationCount = invitationsAsync.valueOrNull?.length ?? 0;
 
+    final titles = ref.watch(shellAppBarTitleProvider);
+    final currentIndex = widget.navigationShell.currentIndex;
+    final titleWidget = titles[currentIndex];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -50,10 +56,34 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: titleWidget ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.filter_list, color: AppColors.textPrimary),
+                    iconSize: 28,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    onPressed: () => FilterBottomSheet.show(context),
+                    tooltip: 'Bộ lọc',
+                  ),
                   IconButton(
                     icon: const Icon(Icons.people_outline, color: AppColors.textPrimary),
+                    iconSize: 28,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: const EdgeInsets.all(12),
+                    ),
                     onPressed: () => context.push('/friend'),
                     tooltip: 'Friend',
                   ),
@@ -64,6 +94,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                             child: const Icon(Icons.notifications_none, color: AppColors.textPrimary),
                           )
                         : const Icon(Icons.notifications_none, color: AppColors.textPrimary),
+                    iconSize: 28,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: const EdgeInsets.all(12),
+                    ),
                     onPressed: () => context.push('/notifications'),
                     tooltip: 'Thông báo',
                   ),
